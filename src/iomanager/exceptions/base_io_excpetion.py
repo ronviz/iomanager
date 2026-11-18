@@ -1,0 +1,2 @@
+class BaseIOException(Exception):
+    pass
