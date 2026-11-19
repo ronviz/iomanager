@@ -1,5 +1,5 @@
-from io import BytesIO
 import json
+from io import BytesIO
 from typing import override
 
 from iomanager.message import Message

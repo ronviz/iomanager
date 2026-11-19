@@ -1,18 +1,19 @@
-from io import BytesIO
 import json
+from io import BytesIO
 from typing import override
 
+from iomanager.io_manager import IOManager
 from iomanager.message import Message
 from iomanager.message_store.message_store import (
     MessageAlreadyExistsError,
     MessageNotFoundError,
 )
 from iomanager.message_store.message_store_manager import MessageStoreManager
-from iomanager.transaction import TransactionStack
-from iomanager.transformer.io_transformer import IOTransformer
+from iomanager.transaction.transaction_stack import TransactionStack
+from iomanager.transformer.transformer import Transformer
 
 
-class MessageStoreTransformer(IOTransformer):
+class MessageStoreTransformer(Transformer, IOManager):
     def __init__(
         self, message_store_manager: MessageStoreManager, output_message_store_name: str
     ):
@@ -27,11 +28,11 @@ class MessageStoreTransformer(IOTransformer):
     def close(self) -> None:
         self._message_store_manager.close()
 
-    def _encode_key(key: str, message_store_name: str) -> bytes:
+    def _encode_key(self, key: str, message_store_name: str) -> bytes:
         data = {"key": key, "message_store": message_store_name}
         return json.dumps(data).encode()
 
-    def _decode_key(stream: bytes) -> tuple[str, str]:
+    def _decode_key(self, stream: bytes) -> tuple[str, str]:
         data = json.loads(stream.decode())
         return (
             data["key"],
@@ -39,7 +40,7 @@ class MessageStoreTransformer(IOTransformer):
         )  # TODO raise custom error on broken message
 
     @override
-    def transform_input(self, message: Message):
+    def transform_input(self, message: Message) -> None:
         transaction_stack = TransactionStack()
         transaction_stack.push_transaction(message.transaction)
         message.data.seek(0)
@@ -50,8 +51,8 @@ class MessageStoreTransformer(IOTransformer):
             ).get_message(key)
             transaction_stack.push_transaction(stored_message.transaction)
             message.data = stored_message.data
-            message.headers = stored_message.headers
-            message.transaction = self._transaction_stack
+            message.metadata = stored_message.metadata
+            message.transaction = transaction_stack
         except MessageNotFoundError:
             transaction_stack.commit()
             raise
@@ -60,7 +61,7 @@ class MessageStoreTransformer(IOTransformer):
             raise
 
     @override
-    def transform_output(self, message: Message) -> Message:
+    def transform_output(self, message: Message) -> None:
         transaction_stack = TransactionStack()
         transaction_stack.push_transaction(message.transaction)
         try:
@@ -69,7 +70,7 @@ class MessageStoreTransformer(IOTransformer):
             ).put_message(message)
             transaction_stack.push_transaction(message.transaction)
             message.data = BytesIO(self._encode_key(key, self._output_message_store_name))
-            message.transaction = self._transaction_stack
+            message.transaction = transaction_stack
         except MessageAlreadyExistsError:
             pass
         except Exception:

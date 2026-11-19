@@ -8,7 +8,6 @@ class LockedError(BaseIOException):
     Raised when a lock is already locked
     """
 
-    pass
 
 
 class Lock(ABC):

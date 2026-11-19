@@ -1,9 +1,12 @@
-from io import BytesIO
 import tarfile
+from io import BytesIO
 from typing import override
 
 from iomanager.bulker.bulker import Bulker, PackingError, SplittingError
-from iomanager.bulker.consts import BULKER_TYPE_METADATA_KEY, PAX_HEADER_TAR_BULKER_TYPE, PAX_HEADERS_TAR_BULKER_TYPE
+from iomanager.bulker.consts import (
+    BULKER_TYPE_METADATA_KEY,
+    PAX_HEADERS_TAR_BULKER_TYPE,
+)
 from iomanager.message import Message
 from iomanager.transaction.noop_transaction import NoopTransaction
 
