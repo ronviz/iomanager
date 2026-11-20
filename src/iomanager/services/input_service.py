@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
 
 from iomanager.input.input_device_manager import InputDeviceManager
 from iomanager.message import Headers

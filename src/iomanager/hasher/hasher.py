@@ -8,5 +8,5 @@ class Hasher(ABC):
     Should give a unique key to each message
     """
     @abstractmethod
-    def hash_message(message: Message) -> str:
+    def hash_message(self, message: Message) -> str:
         pass

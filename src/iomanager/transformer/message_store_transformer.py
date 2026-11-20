@@ -1,6 +1,6 @@
 import json
-from io import BytesIO
 import logging
+from io import BytesIO
 from typing import override
 
 from iomanager.io_manager import IOManager
@@ -74,7 +74,7 @@ class MessageStoreTransformer(Transformer, IOManager):
         try:
             message_to_store = Message(
                 data=message.data,
-                metadata=message.metadata.copy,
+                metadata=message.metadata.copy(),
                 transaction=message.transaction,
             )
             if not self._should_store_headers:

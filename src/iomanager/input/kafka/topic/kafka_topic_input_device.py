@@ -1,9 +1,11 @@
 from io import BytesIO
-from typing import Dict
+
 from confluent_kafka import Consumer, KafkaError, KafkaException
 
 from iomanager.input.input_device import InputDevice
-from iomanager.input.kafka.topic.kafka_topic_input_transaction import KafkaTopicInputTransaction
+from iomanager.input.kafka.topic.kafka_topic_input_transaction import (
+    KafkaTopicInputTransaction,
+)
 from iomanager.message import Message
 
 
@@ -24,19 +26,21 @@ class KafkaTopicInputDevice(InputDevice):
             if raw_msg is None:
                 continue
 
-            if raw_msg.error():
-                if raw_msg.error().code() == KafkaError._PARTITION_EOF:
+            error = raw_msg.error()
+            if error:
+                if error.code() == KafkaError._PARTITION_EOF:
                     continue
-                raise KafkaException(raw_msg.error())
+                raise KafkaException(error)
 
             payload = raw_msg.value() or b""
             data_stream = BytesIO(payload)
 
-            metadata: Dict[str, str] = {}
-            if raw_msg.headers():
-                for k, v in raw_msg.headers():
+            metadata: dict[str, str] = {}
+            raw_headers = raw_msg.headers()
+            if raw_headers:
+                for k, v in raw_headers:
                     if v is not None:
-                        metadata[k] = v.decode("utf-8") if isinstance(v, bytes) else str(v)
+                        metadata[str(k)] = v.decode("utf-8") if isinstance(v, bytes) else str(v)
 
             transaction = KafkaTopicInputTransaction(self._consumer, raw_msg)
 

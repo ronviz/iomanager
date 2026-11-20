@@ -19,14 +19,14 @@ class TarBulker(Bulker):
                     message.data.seek(0)
 
                     info = tarfile.TarInfo(name=str(i))
-                    info.size = len(message.data.getbuffer().nbytes)
+                    info.size = message.data.getbuffer().nbytes
                     info.pax_headers = message.metadata.copy()
 
                     tar.addfile(tarinfo=info, fileobj=message.data)
             return Message(
                 data=buffer,
                 metadata={},
-                transaction=NoopTransaction,
+                transaction=NoopTransaction(),
             )
         except Exception as e:
             raise PackingError("Could not pack message as into tar") from e
@@ -47,7 +47,7 @@ class TarBulker(Bulker):
                             Message(
                                 data=BytesIO(extracted.read()),
                                 metadata=dict(member.pax_headers),
-                                transaction=NoopTransaction,
+                                transaction=NoopTransaction(),
                             )
                         )
 

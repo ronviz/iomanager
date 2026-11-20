@@ -26,7 +26,7 @@ class GzipCompressor(Transformer):
         except Exception as e:
             raise CompressionError("Could not gzip message") from e
 
-        message.data = (buffer,)
+        message.data = buffer
         message.metadata[COMPRESSOR_TYPE_METADATA_KEY] = GZIP_COMPRESSOR_TYPE
 
     @override
@@ -35,7 +35,7 @@ class GzipCompressor(Transformer):
             raise DecompressionError("Message is not gzip")
         try:
             message.data.seek(0)
-            with gzip.GzipFile(fileobj=message.data.read(), mode="rb") as gz:
+            with gzip.GzipFile(fileobj=message.data, mode="rb") as gz:
                 message.metadata.pop(COMPRESSOR_TYPE_METADATA_KEY)
                 message.data = BytesIO(gz.read())
         except Exception as e:

@@ -22,7 +22,7 @@ class AdaptingBulker(Bulker):
             else, will just return them as-is
         """
         self._names_to_bulkers: dict[str, Bulker] = {
-            self._get_bulker_name(bulker): bulkers for bulker in bulkers
+            self._get_bulker_name(bulker): bulker for bulker in bulkers
         }
         self.add_bulker(defualt_bulker)
         self._defualt_bulker_name = self._get_bulker_name(defualt_bulker)

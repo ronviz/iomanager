@@ -1,5 +1,5 @@
 import socket
-from typing import Optional
+
 from confluent_kafka import Consumer, KafkaException
 from confluent_kafka.admin import AdminClient
 
@@ -19,7 +19,7 @@ class KafkaTopicInputDeviceManager(InputDeviceManager):
         self,
         host: str,
         port: int = 9092,
-        group_id: Optional[str] = None,
+        group_id: str | None = None,
         poll_timeout: float = 1.0,
         metadata_timeout: float = 5.0,
         verify_device_exists: bool = True,
@@ -30,7 +30,7 @@ class KafkaTopicInputDeviceManager(InputDeviceManager):
         self._metadata_timeout = metadata_timeout
         self._verify_device_exists = verify_device_exists
         self._pod_hostname = socket.gethostname()
-        self._admin_client: Optional[AdminClient] = None
+        self._admin_client: AdminClient | None = None
         self._consumers: list[Consumer] = []
         self._is_connected = False
 

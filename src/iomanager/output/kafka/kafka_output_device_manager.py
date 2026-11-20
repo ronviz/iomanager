@@ -1,5 +1,5 @@
 import socket
-from typing import Optional
+
 from confluent_kafka import KafkaException, Producer
 from confluent_kafka.admin import AdminClient
 
@@ -28,8 +28,8 @@ class KafkaOutputDeviceManager(OutputDeviceManager):
         self._metadata_timeout = metadata_timeout
         self._verify_device_exists = verify_device_exists
         self._pod_hostname = socket.gethostname()
-        self._admin_client: Optional[AdminClient] = None
-        self._producer: Optional[Producer] = None
+        self._admin_client: AdminClient | None = None
+        self._producer: Producer | None = None
         self._is_connected = False
 
     def connect(self) -> None:

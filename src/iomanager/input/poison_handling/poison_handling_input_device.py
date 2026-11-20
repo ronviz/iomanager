@@ -1,9 +1,7 @@
 import logging
 from typing import override
 
-from iomanager.counter.counter import Counter
 from iomanager.exceptions.base_io_excpetion import BaseIOException
-from iomanager.hasher.hasher import Hasher
 from iomanager.input.input_device import InputDevice
 from iomanager.input.poison_handling.poison_handling_transaction import (
     PoisonHandlingTransaction,
@@ -40,7 +38,7 @@ class PoisonHandlingInputDevice(InputDevice):
             prior_attempts = 0
 
         if prior_attempts > self._max_backout_count:
-            logging.error(f"Poison message detected. Dropping.")
+            logging.error("Poison message detected. Dropping.")
             message.transaction.commit()
             raise PoisonMessageError("Poison message dropped")
 

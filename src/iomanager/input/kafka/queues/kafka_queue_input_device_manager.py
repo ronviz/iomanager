@@ -1,9 +1,12 @@
 import socket
-from typing import Optional
-from confluent_kafka import Consumer, KafkaException
+
+from confluent_kafka import KafkaException, ShareConsumer
 from confluent_kafka.admin import AdminClient
 
-from iomanager.input.input_device_manager import InputDeviceManager, InputDeviceNotFoundError
+from iomanager.input.input_device_manager import (
+    InputDeviceManager,
+    InputDeviceNotFoundError,
+)
 from iomanager.input.kafka.queues.kafka_queue_input_device import KafkaQueueInputDevice
 
 
@@ -23,8 +26,8 @@ class KafkaQueueInputDeviceManager(InputDeviceManager):
         self._metadata_timeout = metadata_timeout
         self._verify_device_exists = verify_device_exists
         self._pod_hostname = socket.gethostname()
-        self._admin_client: Optional[AdminClient] = None
-        self._consumers: list[Consumer] = []
+        self._admin_client: AdminClient | None = None
+        self._consumers: list[ShareConsumer] = []
         self._is_connected = False
 
     def connect(self) -> None:
@@ -75,7 +78,7 @@ class KafkaQueueInputDeviceManager(InputDeviceManager):
             "enable.auto.commit": False,
         }
 
-        consumer = Consumer(consumer_config)
+        consumer = ShareConsumer(consumer_config)
         self._consumers.append(consumer)
         return KafkaQueueInputDevice(consumer=consumer, topic=device_name)
 

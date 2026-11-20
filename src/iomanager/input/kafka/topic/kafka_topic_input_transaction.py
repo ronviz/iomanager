@@ -1,4 +1,5 @@
-from confluent_kafka import Consumer, Message as KafkaRawMessage, TopicPartition
+from confluent_kafka import Consumer, TopicPartition
+from confluent_kafka import Message as KafkaRawMessage
 
 from iomanager.transaction.transaction import Transaction
 
@@ -20,10 +21,17 @@ class KafkaTopicInputTransaction(Transaction):
     def rollback(self) -> None:
         if self._completed:
             return
-        tp = TopicPartition(
-            self._raw_msg.topic(),
-            self._raw_msg.partition(),
-            self._raw_msg.offset(),
-        )
+        topic = self._raw_msg.topic()
+        partition = self._raw_msg.partition()
+        offset = self._raw_msg.offset()
+
+        if topic is None or partition is None or offset is None:
+            raise RuntimeError(
+                f"Cannot seek rollback: Kafka message is missing valid coordinates "
+                f"(topic={topic!r}, partition={partition!r}, offset={offset!r}). "
+                f"Expected a valid consumed record."
+            )
+
+        tp = TopicPartition(topic, partition, offset)
         self._consumer.seek(tp)
         self._completed = True
