@@ -16,10 +16,14 @@ from iomanager.transformer.transformer import Transformer
 
 class MessageStoreTransformer(Transformer, IOManager):
     def __init__(
-        self, message_store_manager: MessageStoreManager, output_message_store_name: str
+        self,
+        message_store_manager: MessageStoreManager,
+        output_message_store_name: str,
+        should_store_headers: bool,
     ):
         self._message_store_manager = message_store_manager
         self._output_message_store_name = output_message_store_name
+        self._should_store_headers = should_store_headers
 
     @override
     def connect(self) -> None:
@@ -52,7 +56,8 @@ class MessageStoreTransformer(Transformer, IOManager):
             ).get_message(key)
             transaction_stack.push_transaction(stored_message.transaction)
             message.data = stored_message.data
-            message.metadata = stored_message.metadata
+            if self._should_store_headers:
+                message.metadata = stored_message.metadata
             message.transaction = transaction_stack
         except MessageNotFoundError:
             logging.warning("Message does not exist in message store. Dropping")
@@ -67,12 +72,26 @@ class MessageStoreTransformer(Transformer, IOManager):
         transaction_stack = TransactionStack()
         transaction_stack.push_transaction(message.transaction)
         try:
+            message_to_store = Message(
+                data=message.data,
+                metadata=message.metadata.copy,
+                transaction=message.transaction,
+            )
+            if not self._should_store_headers:
+                message_to_store.metadata = {}
+
             key = self._message_store_manager.get_message_store(
                 self._output_message_store_name
-            ).put_message(message)
-            transaction_stack.push_transaction(message.transaction)
-            message.data = BytesIO(self._encode_key(key, self._output_message_store_name))
+            ).put_message(message_to_store)
+            transaction_stack.push_transaction(message_to_store.transaction)
+
+            message.data = BytesIO(
+                self._encode_key(key, self._output_message_store_name)
+            )
             message.transaction = transaction_stack
+            if self._should_store_headers:
+                message.metadata = {}
+
         except MessageAlreadyExistsError:
             logging.warning("Message already exists in message store", exc_info=True)
         except Exception:
