@@ -1,28 +1,34 @@
 from typing import override
 
 from iomanager.lock.lock import Lock
+from iomanager.lock.lock_factory import LockFactory
 from iomanager.message import Message
 from iomanager.message_store.message_store import MessageStore
 from iomanager.transaction.locked_transaction import LockedTransaction
 
 
 class FullyLockingMessageStore(MessageStore):
-    def __init__(self, lock: Lock, message_store: MessageStore):
-        self._lock = lock
+    def __init__(self, lock_factory: LockFactory, message_store: MessageStore):
+        self._lock_factory = lock_factory
         self._message_store = message_store
 
     @override
     def get_message(self, key: str) -> Message:
-        self._lock.lock()
+        lock = self._lock_factory.get_lock(key)
+        lock.lock()
         message = self._message_store.get_message(key)
-        locked_transaction = LockedTransaction(self._lock, message.transaction)
+        locked_transaction = LockedTransaction(lock, message.transaction)
         message.transaction = locked_transaction
         return message
 
     @override
     def put_message(self, message: Message) -> str:
-        self._lock.lock()
         key = self._message_store.put_message(message)
-        locked_transaction = LockedTransaction(self._lock, message.transaction)
+        lock = self._lock_factory.get_lock(key)
+        locked_transaction = LockedTransaction(lock, message.transaction)
         message.transaction = locked_transaction
         return key
+
+    @override
+    def delete_message(self, key: str) -> None:
+        self._message_store.delete_message(key)
