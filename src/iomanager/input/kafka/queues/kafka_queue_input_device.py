@@ -1,6 +1,11 @@
 from io import BytesIO
 
-from confluent_kafka import KafkaError, KafkaException, ShareConsumer
+try:
+    from confluent_kafka import KafkaError, KafkaException, ShareConsumer
+
+    _HAS_KAFKA = True
+except ImportError:
+    _HAS_KAFKA = False
 
 from iomanager.input.input_device import InputDevice
 from iomanager.message import Message
@@ -14,6 +19,10 @@ class KafkaQueueInputDevice(InputDevice):
     DELIVERY_COUNT_KEY = "delivery_count"
 
     def __init__(self, consumer: ShareConsumer, topic: str, poll_timeout: float = 1.0):
+        if not _HAS_KAFKA:
+            raise ImportError(
+                "Kafka support requires the 'kafka' extra. Install it with: pip install 'iomanager[kafka]'"
+            )
         self._consumer = consumer
         self._topic = topic
         self._poll_timeout = poll_timeout

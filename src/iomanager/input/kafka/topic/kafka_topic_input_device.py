@@ -1,6 +1,11 @@
 from io import BytesIO
 
-from confluent_kafka import Consumer, KafkaError, KafkaException
+try:
+    from confluent_kafka import Consumer, KafkaError, KafkaException
+
+    _HAS_KAFKA = True
+except ImportError:
+    _HAS_KAFKA = False
 
 from iomanager.input.input_device import InputDevice
 from iomanager.input.kafka.topic.kafka_topic_input_transaction import (
@@ -13,6 +18,10 @@ class KafkaTopicInputDevice(InputDevice):
     """Reads messages from a standard Kafka topic."""
 
     def __init__(self, consumer: Consumer, topic: str, poll_timeout: float = 1.0):
+        if not _HAS_KAFKA:
+            raise ImportError(
+                "Kafka support requires the 'kafka' extra. Install it with: pip install 'iomanager[kafka]'"
+            )
         self._consumer = consumer
         self._topic = topic
         self._poll_timeout = poll_timeout
@@ -40,7 +49,9 @@ class KafkaTopicInputDevice(InputDevice):
             if raw_headers:
                 for k, v in raw_headers:
                     if v is not None:
-                        metadata[str(k)] = v.decode("utf-8") if isinstance(v, bytes) else str(v)
+                        metadata[str(k)] = (
+                            v.decode("utf-8") if isinstance(v, bytes) else str(v)
+                        )
 
             transaction = KafkaTopicInputTransaction(self._consumer, raw_msg)
 

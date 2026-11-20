@@ -1,7 +1,13 @@
 from io import BytesIO
 import logging
 from typing import TYPE_CHECKING, override
-from botocore.exceptions import ClientError
+
+try:
+    from botocore.exceptions import ClientError
+
+    _HAS_BOTO = True
+except ImportError:
+    _HAS_BOTO = False
 
 from iomanager.hasher.hasher import Hasher
 from iomanager.message import Message
@@ -26,6 +32,10 @@ class S3MessageStore(MessageStore):
         hasher: Hasher,
         save_metadata: bool = True,
     ):
+        if not _HAS_BOTO:
+            raise ImportError(
+                "S3 support requires the 's3' extra. Install it with: pip install 'iomanager[s3]'"
+            )
         self._client = client
         self._bucket_name = bucket_name
         self._hasher = hasher

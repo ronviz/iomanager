@@ -1,7 +1,12 @@
 import socket
 
-from confluent_kafka import KafkaException, Producer
-from confluent_kafka.admin import AdminClient
+try:
+    from confluent_kafka import KafkaException, Producer
+    from confluent_kafka.admin import AdminClient
+
+    _HAS_KAFKA = True
+except ImportError:
+    _HAS_KAFKA = False
 
 from iomanager.output.kafka.kafka_output_device import (
     KafkaOutputDevice,
@@ -23,6 +28,10 @@ class KafkaOutputDeviceManager(OutputDeviceManager):
         metadata_timeout: float = 5.0,
         verify_device_exists: bool = True,
     ):
+        if not _HAS_KAFKA:
+            raise ImportError(
+                "Kafka support requires the 'kafka' extra. Install it with: pip install 'iomanager[kafka]'"
+            )
         self._bootstrap_servers = f"{host}:{port}"
         self._flush_timeout = flush_timeout
         self._metadata_timeout = metadata_timeout

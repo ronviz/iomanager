@@ -1,7 +1,12 @@
 from typing import TYPE_CHECKING, Optional, override
-import boto3
-from botocore.config import Config
-from botocore.exceptions import ClientError
+
+try:
+    import boto3
+    from botocore.config import Config
+    from botocore.exceptions import ClientError
+    _HAS_BOTO = True
+except ImportError:
+    _HAS_BOTO = False
 
 from iomanager.hasher.hasher import Hasher
 from iomanager.io_manager import IOManager
@@ -30,6 +35,10 @@ class S3MessageStoreManager(MessageStoreManager):
         read_timeout: float = 10.0,
         verify_store_exists: bool = True,
     ):
+        if not _HAS_BOTO:
+            raise ImportError(
+                "S3 support requires the 's3' extra. Install it with: pip install 'iomanager[s3]'"
+            )
         self._hasher = hasher
         self._region_name = region_name
         self._endpoint_url = endpoint_url

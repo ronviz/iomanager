@@ -34,11 +34,10 @@ class CounterRetryTracker(RetryTracker, IOManager):
     @override
     def record_attempt(self, message: Message) -> int:
         key = self._get_message_key(message)
-        prior_attempts = self._counter.get_count(key)
-        self._counter.increment(key)
+        prior_attempts = self._counter.increment(key) - 1
         return prior_attempts
 
     @override
     def clear(self, message: Message) -> None:
         key = self._get_message_key(message)
-        self._counter.delete_key(key)
+        self._counter.reset(key)

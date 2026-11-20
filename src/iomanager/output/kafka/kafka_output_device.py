@@ -1,6 +1,11 @@
 import logging
 
-from confluent_kafka import KafkaError, KafkaException, Producer
+try:
+    from confluent_kafka import KafkaError, KafkaException, Producer
+
+    _HAS_KAFKA = True
+except ImportError:
+    _HAS_KAFKA = False
 
 from iomanager.message import Message
 from iomanager.output.output_device import OutputDevice
@@ -10,6 +15,10 @@ class KafkaOutputDevice(OutputDevice):
     """Publishes message payloads to a specific Kafka topic and commits/rolls back the incoming transaction."""
 
     def __init__(self, producer: Producer, topic: str, flush_timeout: float = 10.0):
+        if not _HAS_KAFKA:
+            raise ImportError(
+                "Kafka support requires the 'kafka' extra. Install it with: pip install 'iomanager[kafka]'"
+            )
         self._producer = producer
         self._topic = topic
         self._flush_timeout = flush_timeout
