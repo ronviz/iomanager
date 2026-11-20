@@ -1,3 +1,4 @@
+import logging
 from typing import override
 
 from iomanager.counter.counter import Counter
@@ -18,18 +19,19 @@ class PoisonHandlingTransaction(Transaction):
 
         try:
             if self._counter.get_count(self._message_key) > max_backout_count:
+                logging.error("Recieved poison message. Dropping")
                 self.commit()
             else:
                 self._counter.increment(self._message_key)
         except:
-            pass  # We do not want to fail if we cannot count. it is best-effort
+            logging.warning("Could not count message in poison counter", exc_info=True)
 
     @override
     def commit(self) -> None:
         try:
             self._counter.delete_key(self._message_key)
         except:
-            pass  # Again, best effort
+            logging.warning("Could not delete message from poison counter", exc_info=True)
         self._transaction.commit()
 
     @override

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import logging
 
 from iomanager.input.input_device_manager import InputDeviceManager
 from iomanager.message import Headers, Message
@@ -53,7 +54,7 @@ class PipelineService:
                 try:
                     self._run_once()
                 except:
-                    pass  # TODO add logging
+                    logging.error("Failed to run service", exc_info=True)
 
     def stop(self) -> None:
         self._is_running = False

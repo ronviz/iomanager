@@ -1,5 +1,6 @@
 import json
 from io import BytesIO
+import logging
 from typing import override
 
 from iomanager.io_manager import IOManager
@@ -54,6 +55,7 @@ class MessageStoreTransformer(Transformer, IOManager):
             message.metadata = stored_message.metadata
             message.transaction = transaction_stack
         except MessageNotFoundError:
+            logging.warning("Message does not exist in message store. Dropping")
             transaction_stack.commit()
             raise
         except Exception:
@@ -72,7 +74,7 @@ class MessageStoreTransformer(Transformer, IOManager):
             message.data = BytesIO(self._encode_key(key, self._output_message_store_name))
             message.transaction = transaction_stack
         except MessageAlreadyExistsError:
-            pass
+            logging.warning("Message already exists in message store", exc_info=True)
         except Exception:
             transaction_stack.rollback()
             raise
