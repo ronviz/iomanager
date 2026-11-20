@@ -10,6 +10,8 @@ from .kafka_queue_input_transaction import KafkaQueueInputTransaction
 class KafkaQueueInputDevice(InputDevice):
     """Reads messages from a Kafka topic in Queue (Share Group) mode."""
 
+    DELIVERY_COUNT_KEY = "delivery_count"
+
     def __init__(self, consumer: Consumer, topic: str, poll_timeout: float = 1.0):
         self._consumer = consumer
         self._topic = topic
@@ -36,8 +38,11 @@ class KafkaQueueInputDevice(InputDevice):
             if raw_msg.headers():
                 for k, v in raw_msg.headers():
                     if v is not None:
-                        metadata[k] = v.decode("utf-8") if isinstance(v, bytes) else str(v)
-
+                        metadata[k] = (
+                            v.decode("utf-8") if isinstance(v, bytes) else str(v)
+                        )
+            if raw_msg.delivery_count() is not None:
+                metadata[self.DELIVERY_COUNT_KEY] = str(raw_msg.delivery_count())
             transaction = KafkaQueueInputTransaction(self._consumer, raw_msg)
 
             return Message(
