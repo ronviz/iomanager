@@ -1,0 +1,44 @@
+v2 bucket list:
+- async!!!
+- better names:
+  - MessageSubscriber
+  - MessageSubscriberFactory
+  - MessagePublisher
+  - MessagePublisherFactory
+  - MessageStore
+  - MessageStoreFactory
+  - Lock
+  - LockFactory
+- subscribers:
+  - Kafka
+  - RabbitMQ
+- publishers:
+  - Kafka
+  - RabbitMQ
+  - HTTP
+  - ElasticSearch
+- stores:
+  - s3
+  - filesystem
+  - redis
+- lock:
+  - redis
+- transformers:
+  - message store transformer
+  - compressors:
+    - gzip
+    - lz4
+    - adapting
+- bulkers:
+  - tar
+  - adapting
+- serializer:
+  - json
+- message inside transaction
+- services:
+  - Ingestor - gets message, returns list of message + destination
+  - PipelineService - gets ingestor, subscriber factory, publisher factory
+  - service runner (which will handle calling start and stop, interupts, timeouts, etc)
+  - schematics (with pydantic):
+    - `SchematicIngestor[BaseModel]`
+    - `SchematicPipelineService[BaseModel]`
