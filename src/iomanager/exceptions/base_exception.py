@@ -1,0 +1,2 @@
+class IOManagerException(BaseException):
+    pass
