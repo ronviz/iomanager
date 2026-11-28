@@ -27,36 +27,25 @@ The framework enforces data integrity through the `Transaction` interface. Throu
 - **`InputManager` / `OutputManager`**: Manages the interfaces for reading from and writing to external systems.
 
 # TODO
+- poison handling
+- failover
+- unifing
 - subscribers:
-  - Kafka
   - RabbitMQ
 - publishers:
-  - Kafka
   - RabbitMQ
   - HTTP
   - ElasticSearch
 - stores:
-  - s3
   - filesystem
   - redis
-- lock:
+- locks:
   - redis
 - transformers:
-  - message store transformer
   - compressors:
     - gzip
     - lz4
-    - adapting
-- bulkers:
-  - tar
-  - adapting
-- serializer:
-  - json
-- message inside transaction
-- services:
-  - Ingestor - gets message, returns list of message + destination
-  - PipelineService - gets ingestor, subscriber factory, publisher factory
-  - service runner (which will handle calling start and stop, interupts, timeouts, etc)
-  - schematics (with pydantic):
-    - `SchematicIngestor[BaseModel]`
-    - `SchematicPipelineService[BaseModel]`
+    - adaptive
+- schematics (with pydantic):
+  - `SchematicIngestor[BaseModel]`
+  - `SchematicPipelineService[BaseModel]`
