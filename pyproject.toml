@@ -13,6 +13,9 @@ dependencies = []
 s3 = [
     "aioboto3>=15.5.0",
 ]
+kafka = [
+    "aiokafka>=0.15.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12.0"]
@@ -21,6 +24,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "aioboto3>=15.5.0",
+    "aiokafka>=0.15.0",
     "black>=26.10.1",
     "ruff>=0.17.6",
     "ty>=0.0.110",
